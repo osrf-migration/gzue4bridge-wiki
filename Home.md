@@ -1,42 +1,47 @@
-# Welcome
+# Gazebo and Unreal Engine Integration
 
-Welcome to your wiki! This is the default page we've installed for your convenience. Go ahead and edit it.
+## Architecture
 
-## Wiki features
+Here's an overview of the different components in the Gazebo + Unreal integration setup
 
-This wiki uses the [Markdown](http://daringfireball.net/projects/markdown/) syntax. The [MarkDownDemo tutorial](https://bitbucket.org/tutorials/markdowndemo) shows how various elements are rendered. The [Bitbucket documentation](https://confluence.atlassian.com/x/FA4zDQ) has more information about using a wiki.
+* gzue4bridge: A plugin that will be loaded when the unreal project is launched. This plugin should operate in both editor mode and game mode. It is responsible for communicating with Gazebo over the `gzbridge` websocket server.
 
-The wiki itself is actually a mercurial repository, which means you can clone it, edit it locally/offline, add images or any other file type, and push it back to us. It will be live immediately.
-
-Go ahead and try:
-
-```
-$ hg clone https://bitbucket.org/osrf/gzue4bridge/wiki
-```
-
-Wiki pages are normal files, with the .md extension. You can edit them locally, as well as creating new ones.
-
-## Syntax highlighting
+* gzbridge: A websocket server that converts protobuf messages published by the Gazebo simulation server to JSON format and republish them over port 8080. Similarly, it can receive messages in JSON format from websocket clients (e.g. `gzue4bridge`) and convert them to protobuf messages before sending them to Gazebo.
 
 
-You can also highlight snippets of text (we use the excellent [Pygments][] library).
+# Communication Channel
 
-[Pygments]: http://pygments.org/
+Gazebo provides publish/subscribe communication over named topics in the same way as ROS. These topics form the main communication channel between Gazebo and Unreal and are used to keep the two worlds in synchronization.
+
+## Topics
+
+The `gzue4bridge` plugin subscribes to the following topics to create gazebo entities in the Unreal world and update their pose.
+
+* `~/scene`: provides initial scene information. The message contains a scene tree of all objects in the world. There should typically only be one message received on this topic after a client connects. 
+
+* `~/model/info`: provides information about a new or existing model in gazebo. Each time a model is added to the world, a message containing all its properties including links, joints, visuals, and nested models is published to this topic. Similarly, when a model property is modified, a message is also published to this topic.
+
+* `~/pose/info`: provides timestamped pose information of entities in gazebo. An entity can be a model, link, or collision. The message will only contain entities whose pose have changed in that time step. The rate at which the messages are published to this topic can be configured through gzbridge. For lock-stepping Unreal with Gazebo, it is important to receive the pose messages at full rate, i.e. 1000Hz.
+
+The `gzue4plugin` publishes to the following gazebo topics to create Unreal objects in Gazebo and keep the pose in sync.
+
+* `~/factory`: creates a model in gazebo and place them at the specified location. The message takes in an SDF string that describes the model to be created. 
+
+* `~/model/modify`: updates the properties of a model in gazebo, including the properties of its links, joints, and collisions. 
+
+## Synchronization
+
+Synchronization between the two worlds are currently achieved by exchanging messages over the Gazebo topics described above.
+
+### Gazebo to Unreal
+
+**Initialization**: The `gzue4bridge` plugin subscribes to the `~/scene` topic and creates Unreal actors representing these Gazebo models in the Unreal world. 
+
+**Pose Sync**: The `gzue4bridge` subscribes to the `~/pose/info` topic and updates the actors and their components in the Unreal world based on the received pose data.
 
 
-Here's an example of some Python code:
+## Unreal to Gazebo
 
-```
-#!python
+**Initialization**: The `gzue4bridge` plugin publishes to the `~/factory` topic to create models in Gazebo that represents the actors in Unreal. Currently only Unreal's skeletal mesh actors are created in Gazebo.
 
-def wiki_rocks(text):
-    formatter = lambda t: "funky"+t
-    return formatter(text)
-```
-
-
-You can check out the source of this page to see how that's done, and make sure to bookmark [the vast library of Pygment lexers][lexers], we accept the 'short name' or the 'mimetype' of anything in there.
-[lexers]: http://pygments.org/docs/lexers/
-
-
-Have fun!
+**Pose Sync**: The `gzue4bridge` plugin publishes to the `~/model/modify` topic to update the pose of Gazebo models and links that correspond to their counterparts in Unreal. Currently only the pose of Unreal's skeletal mesh actors are kept in sync.
