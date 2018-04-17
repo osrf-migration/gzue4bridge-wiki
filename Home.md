@@ -13,9 +13,30 @@ Here's an overview of the different components in the Gazebo + Unreal integratio
 
 Gazebo provides publish/subscribe communication over named topics in the same way as ROS. These topics form the main communication channel between Gazebo and Unreal and are used to keep the two worlds in synchronization.
 
+## Synchronization
+
+Here's an overview of the synchronization steps taken by the `gzue4bridge` plugin. Syncronization is done in both ways: from Gazebo to Unreal and vice versa. More information about the topics can be found in `Topics` section.
+
+### Gazebo to Unreal
+
+**Initialization**: The `gzue4bridge` plugin subscribes to the `~/scene` topic and creates Unreal actors representing these Gazebo models in the Unreal world. 
+
+**Model Sync**: The `gzue4bridge` plugin subscribes to the `~/model/info` topic and creates a new Unreal actor whenever a message containing an unseen model is received.
+
+**Pose Sync**: The `gzue4bridge` plugin subscribes to the `~/pose/info` topic and updates the actors and their components in the Unreal world based on the received pose data.
+
+## Unreal to Gazebo
+
+**Initialization**: The `gzue4bridge` plugin publishes to the `~/factory` topic to create models in Gazebo that represents the actors in Unreal. Currently only Unreal's skeletal mesh actors are created in Gazebo.
+
+**Model Sync**: The `gzue4bridge` plugin publishes to the `~/factory` topic to create new models in Gazebo.
+
+**Pose Sync**: The `gzue4bridge` plugin publishes to the `~/model/modify` topic to update the pose of Gazebo models and links that correspond to their counterparts in Unreal. Currently only the pose of Unreal's skeletal mesh actors are kept in sync.
+
+
 ## Topics
 
-The `gzue4bridge` plugin subscribes to the following topics to create gazebo entities in the Unreal world and update their pose.
+The topics below are not an exhaustive list of all available Gazebo topics. These are the topics that are currently used by the `gzue4bridge` plugin. 
 
 * `~/scene`: provides initial scene information. The message contains a scene tree of all objects in the world. There should typically only be one message received on this topic after a client connects. 
 
@@ -23,25 +44,28 @@ The `gzue4bridge` plugin subscribes to the following topics to create gazebo ent
 
 * `~/pose/info`: provides timestamped pose information of entities in gazebo. An entity can be a model, link, or collision. The message will only contain entities whose pose have changed in that time step. The rate at which the messages are published to this topic can be configured through gzbridge. For lock-stepping Unreal with Gazebo, it is important to receive the pose messages at full rate, i.e. 1000Hz.
 
-The `gzue4plugin` publishes to the following gazebo topics to create Unreal objects in Gazebo and keep the pose in sync.
-
 * `~/factory`: creates a model in gazebo and place them at the specified location. The message takes in an SDF string that describes the model to be created. 
 
 * `~/model/modify`: updates the properties of a model in gazebo, including the properties of its links, joints, and collisions. 
 
-## Synchronization
+* `~/world/control`: commands are sent over this topic to step, pause, and play the Gazebo physics simulation.
 
-Synchronization between the two worlds are currently achieved by exchanging messages over the Gazebo topics described above.
+## Lock-Stepping
 
-### Gazebo to Unreal
+The main strategy for lock-stepping Unreal with Gazebo is as follows:
 
-**Initialization**: The `gzue4bridge` plugin subscribes to the `~/scene` topic and creates Unreal actors representing these Gazebo models in the Unreal world. 
+1. Begin simulation with Unreal and Gazebo paused.
 
-**Pose Sync**: The `gzue4bridge` subscribes to the `~/pose/info` topic and updates the actors and their components in the Unreal world based on the received pose data.
+1. For any new actors in Unreal, the `gzue4bridge` plugin sends factory messages to Gazebo to create models representing these actors. Wait until the Gazebo models have been created.
 
+1. The `gzue4bridge` creates Unreal actors to represent any new models in Gazebo
 
-## Unreal to Gazebo
+1. For any pose changes of actors in Unreal, the `gzue4bridge` plugin sends pose messages to Gazebo to update models representing these actors. Wait and verify the pose of Gazebo models have been updated.
 
-**Initialization**: The `gzue4bridge` plugin publishes to the `~/factory` topic to create models in Gazebo that represents the actors in Unreal. Currently only Unreal's skeletal mesh actors are created in Gazebo.
+1. The `gzue4bridge` plugin updates the pose of Unreal actors representing Gazebo models based on new pose messages received from Gazebo.
 
-**Pose Sync**: The `gzue4bridge` plugin publishes to the `~/model/modify` topic to update the pose of Gazebo models and links that correspond to their counterparts in Unreal. Currently only the pose of Unreal's skeletal mesh actors are kept in sync.
+1. The `gzue4bridge` waits until it receives a Gazebo timestamp that matches the expected sim time. The two worlds are then in sync.
+
+1. The `gzue4bridge` allows the Unreal actors to take one step and also sends a message to Gazebo to take one step.
+
+1. Repeat from step 2.
