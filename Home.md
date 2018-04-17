@@ -4,6 +4,10 @@
 
 Here's an overview of the different components in the Gazebo + Unreal integration setup
 
+![Lab126 GzUE4Bridge Architecture.jpg](https://bitbucket.org/repo/XXGa7Rg/images/3523798422-Lab126%20GzUE4Bridge%20Architecture.jpg)
+
+Apart from Unreal and Gazebo, here are the two main components:
+
 * gzue4bridge: A plugin that will be loaded when the unreal project is launched. This plugin should operate in both editor mode and game mode. It is responsible for communicating with Gazebo over the `gzbridge` websocket server.
 
 * gzbridge: A websocket server that converts protobuf messages published by the Gazebo simulation server to JSON format and republish them over port 8080. Similarly, it can receive messages in JSON format from websocket clients (e.g. `gzue4bridge`) and convert them to protobuf messages before sending them to Gazebo.
@@ -34,7 +38,7 @@ Here's an overview of the basic synchronization process taken by the `gzue4bridg
 **Pose Sync**: The `gzue4bridge` plugin publishes to the `~/model/modify` topic to update the pose of Gazebo models and links that correspond to their counterparts in Unreal. Currently only the pose of Unreal's skeletal mesh actors are kept in sync.
 
 
-## Topics
+## Gazebo Topics
 
 The topics below are not an exhaustive list of all available Gazebo topics. These are the topics that are currently used by the `gzue4bridge` plugin. 
 
