@@ -31,7 +31,7 @@ Here's an overview of the basic synchronization process taken by the `gzue4bridg
 
 ## Unreal to Gazebo
 
-**Initialization**: The `gzue4bridge` plugin publishes to the `~/factory` topic to create models in Gazebo that represents the actors in Unreal. Currently only Unreal's skeletal mesh actors are created in Gazebo.
+**Initialization**: The `gzue4bridge` plugin publishes to the `~/factory` topic to create models in Gazebo that represent the actors in Unreal. Currently only Unreal's skeletal mesh actors are created in Gazebo.
 
 **Model Sync**: The `gzue4bridge` plugin publishes to the `~/factory` topic to create new models in Gazebo.
 
