@@ -19,7 +19,7 @@ Gazebo provides publish/subscribe communication over named topics in the same wa
 
 ## Synchronization
 
-Here's an overview of the basic synchronization process taken by the `gzue4bridge` plugin. Synchronization is done in both ways: from Gazebo to Unreal and vice versa. More information about the topics can be found in `Topics` section.
+Here's an overview of the basic synchronization process taken by the `gzue4bridge` plugin. Synchronization is done in both ways: from Gazebo to Unreal and vice versa. More information about the topics can be found in `Gazebo Topics` section.
 
 ### Gazebo to Unreal
 
