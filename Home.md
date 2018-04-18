@@ -60,15 +60,15 @@ The main strategy for lock-stepping Unreal with Gazebo is as follows:
 
 1. Begin simulation with Unreal and Gazebo paused.
 
-1. For any new actors in Unreal, the `gzue4bridge` plugin sends factory messages to Gazebo to create models representing these actors. Wait until the Gazebo models have been created.
+1. For any new actors in Unreal, the `gzue4bridge` plugin sends factory messages to Gazebo to create models representing these actors. It waits until the Gazebo models have been created.
 
 1. The `gzue4bridge` creates Unreal actors to represent any new models in Gazebo
 
-1. For any pose changes of actors in Unreal, the `gzue4bridge` plugin sends pose messages to Gazebo to update models representing these actors. Wait and verify the pose of Gazebo models have been updated.
+1. For any pose changes of actors in Unreal, the `gzue4bridge` plugin sends pose messages to Gazebo to update models representing these actors. It waits and verifies that the pose of Gazebo models have been updated.
 
 1. The `gzue4bridge` plugin updates the pose of Unreal actors representing Gazebo models based on new pose messages received from Gazebo.
 
-1. The `gzue4bridge` waits until it receives a Gazebo timestamp that matches the expected sim time. The two worlds are then in sync.
+1. The `gzue4bridge` waits until it receives a Gazebo timestamp that matches the expected sim time. The two worlds are now in sync.
 
 1. The `gzue4bridge` allows the Unreal actors to take one step and also sends a message to Gazebo to take one step.
 
