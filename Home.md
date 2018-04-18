@@ -8,7 +8,7 @@ Here's an overview of the different components in the Gazebo + Unreal integratio
 
 Apart from Unreal and Gazebo, here are the two main components:
 
-* gzue4bridge: A plugin that will be loaded when the unreal project is launched. This plugin should operate in both editor mode and game mode. It is responsible for communicating with Gazebo over the `gzbridge` websocket server.
+* gzue4bridge: A plugin that will be loaded when the unreal project is launched. It is responsible for communicating with Gazebo over the `gzbridge` websocket server.
 
 * gzbridge: A websocket server that converts protobuf messages published by the Gazebo simulation server to JSON format and republish them over port 8080. Similarly, it can receive messages in JSON format from websocket clients (e.g. `gzue4bridge`) and convert them to protobuf messages before sending them to Gazebo.
 
@@ -19,7 +19,7 @@ Gazebo provides publish/subscribe communication over named topics in the same wa
 
 ## Synchronization
 
-Here's an overview of the basic synchronization process taken by the `gzue4bridge` plugin. Syncronization is done in both ways: from Gazebo to Unreal and vice versa. More information about the topics can be found in `Topics` section.
+Here's an overview of the basic synchronization process taken by the `gzue4bridge` plugin. Synchronization is done in both ways: from Gazebo to Unreal and vice versa. More information about the topics can be found in `Topics` section.
 
 ### Gazebo to Unreal
 
