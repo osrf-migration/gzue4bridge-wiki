@@ -76,7 +76,7 @@ The main strategy for lock-stepping Unreal with Gazebo is as follows:
 
 # Videos
 
-Currently, the work is more of a prototype as the result of a feasibility study than a complete fully working integration. Here're a few videos:
+In the current state, the work is more of a prototype as the result of a feasibility study than a complete fully working integration. Here're a few videos:
 
 https://youtu.be/9qHb_AXWSOA
 
